@@ -11,7 +11,12 @@
   # Set your time zone.
   time.timeZone = "Europe/Budapest";
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    chromium = {
+      enableNaCl = true;
+    };
+  };
   environment.systemPackages = with pkgs; [
     curl wget
     gnupg gnupg1compat
@@ -23,13 +28,22 @@
     chromium
     skype kde4.konversation
     vlc mplayer
-    unrar
+    blender povray glxinfo
+    python
+    graphviz imagemagick
+    unrar unzip
   ];
 
   security.polkit = {
     enable = true;
     extraConfig =
       ''
+          polkit.addRule(function(action, subject) {
+            if (action.id == "org.freedesktop.login1.suspend") {
+              return polkit.Result.YES;
+            }
+          });
+
           /* Log authorization checks. */
           polkit.addRule(function(action, subject) {
             polkit.log("subject " +  subject + " is attempting action " + action);
@@ -50,9 +64,10 @@
     synaptics = {
       enable = true;
       vertTwoFingerScroll = true;
+      accelFactor = "0.01";
     };
   };
-  
+
   # The NixOS release to be compatible with for stateful data such as databases.
   system.stateVersion = "15.09";
 }
